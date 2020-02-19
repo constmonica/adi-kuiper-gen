@@ -214,8 +214,8 @@ export LOG_FILE="${WORK_DIR}/build.log"
 
 export TARGET_HOSTNAME=${TARGET_HOSTNAME:-analog}
 
-export FIRST_USER_NAME=${FIRST_USER_NAME:-pi}
-export FIRST_USER_PASS=${FIRST_USER_PASS:-raspberry}
+export FIRST_USER_NAME=${FIRST_USER_NAME:-analog}
+export FIRST_USER_PASS=${FIRST_USER_PASS:-analog}
 export RELEASE=${RELEASE:-bullseye}
 export WPA_ESSID
 export WPA_PASSWORD

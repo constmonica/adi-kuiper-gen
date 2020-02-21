@@ -9,7 +9,6 @@ KERNEL_IMG_PI3=kernel7.img
 KERNEL_IMG_PI4=kernel7l.img
 SCRIPTS_DIR=wiki-scripts
 LINUX_DIR="${1:-linux-adi}"
-BRANCH=rpi-5.4.y
 
 build_linux() {
 
@@ -19,7 +18,7 @@ build_linux() {
 		git clone https://github.com/analogdevicesinc/wiki-scripts.git "$SCRIPTS_DIR"
 	}
 	export DEFCONFIG=$1
-	source $SCRIPTS_DIR/linux/build_rpi_kernel_image.sh $LINUX_DIR "" "arm-linux-gnueabihf-" $BRANCH
+	source $SCRIPTS_DIR/linux/build_rpi_kernel_image.sh $LINUX_DIR "" "arm-linux-gnueabihf-"
 	cp -f zImage $STAGE_WORK_DIR/rootfs/boot/$2
 
 	pushd "$LINUX_DIR"
@@ -35,7 +34,6 @@ build_linux $DEFCONFIG_PI3 $KERNEL_IMG_PI3
 build_linux $DEFCONFIG_PI4 $KERNEL_IMG_PI4
 
 cp -f $WORK_DIR/$LINUX_DIR/arch/$ARCH/boot/dts/overlays/*.dtb* $STAGE_WORK_DIR/rootfs/boot/overlays
-cp -f $WORK_DIR/$LINUX_DIR/arch/$ARCH/boot/dts/bcm27*.dtb $STAGE_WORK_DIR/rootfs/boot
 
 echo "Kernel build finished."
 

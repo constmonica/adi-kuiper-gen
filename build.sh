@@ -167,6 +167,7 @@ export TARGET_HOSTNAME=${TARGET_HOSTNAME:-analog}
 
 export FIRST_USER_NAME=${FIRST_USER_NAME:-analog}
 export FIRST_USER_PASS=${FIRST_USER_PASS:-analog}
+export RELEASE=${RELEASE:-buster}
 export WPA_ESSID
 export WPA_PASSWORD
 export WPA_COUNTRY

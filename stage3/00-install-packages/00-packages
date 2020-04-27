@@ -11,5 +11,4 @@ fonts-droid-fallback
 fonts-liberation2
 obconf
 arandr
-libcamera-tools
-libcamera-apps
+libgtk-3-dev

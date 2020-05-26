@@ -23,6 +23,7 @@ if [ "${NO_PRERUN_QCOW2}" = "0" ]; then
 
 	BOOT_PART_START=$((ALIGN))
 	BOOT_PART_SIZE=$(((BOOT_SIZE + ALIGN - 1) / ALIGN * ALIGN))
+	BOOTLOADER_PART_START=$((BOOT_PART_START + BOOT_PART_SIZE))
 	BOOTLOADER_PART_SIZE=$(((1 + ALIGN  - 1) / ALIGN * ALIGN))
 	ROOT_PART_START=$((BOOTLOADER_PART_START + BOOTLOADER_PART_SIZE))
 	ROOT_PART_SIZE=$(((ROOT_SIZE + ROOT_MARGIN + ALIGN  - 1) / ALIGN * ALIGN))
@@ -35,7 +36,7 @@ if [ "${NO_PRERUN_QCOW2}" = "0" ]; then
 	parted --script "${IMG_FILE}" unit B mkpart primary ext4 "${ROOT_PART_START}" "$((ROOT_PART_START + ROOT_PART_SIZE - 1))"
 	parted --script "${IMG_FILE}" unit B mkpart primary ext4 "${BOOTLOADER_PART_START}" "$((BOOTLOADER_PART_START + BOOTLOADER_PART_SIZE - 1))"
 
-#Change partition 3 type to unknown to be used with Altera/Intel FPGAs
+	#Change partition 3 type to unknown to be used with Altera/Intel FPGAs
 sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' << EOF | fdisk ${IMG_FILE}
 	t	#change partition type
 	3	#partition number

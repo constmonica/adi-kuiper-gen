@@ -13,18 +13,14 @@ QWTPOLAR_BRANCH=master
 LIBSIGROK_BRANCH=master
 LIBSIGROKDECODE_BRANCH=master
 
-SCOPY_RELEASE=v1.3.0-rc2
-SCOPY_ARCHIVE=scopy-${SCOPY_RELEASE}-Linux-arm.flatpak.zip
-SCOPY=https://github.com/analogdevicesinc/scopy/releases/download/${SCOPY_RELEASE}/${SCOPY_ARCHIVE}
-
 ARCH=arm
-JOBS=-j${NUM_JOBS}
+JOBS=-j4
 
 on_chroot << EOF
 build_gnuradio() {
 
 	[ -d "volk" ] || {
-		git clone --recursive https://github.com/gnuradio/volk.git
+		git clone https://github.com/gnuradio/volk.git
 		mkdir -p volk/build
 	}
 
@@ -46,14 +42,15 @@ build_gnuradio() {
 	pushd gnuradio/build
 	git checkout maint-3.8
 
-	cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DENABLE_INTERNAL_VOLK=OFF ../ 
+	cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+		-DENABLE_INTERNAL_VOLK=OFF -DENABLE_GR_ZEROMQ=OFF \
+		-DENABLE_GR_WAVELET=OFF -DENABLE_GR_VOCODER=OFF \
+		-DENABLE_GR_VIDEO_SDL=OFF -DENABLE_GR_TRELLIS=OFF \
+		-DENABLE_GR_DTV=OFF -DENABLE_GR_FEC=OFF ../
 	make ${JOBS}
 	make install
 
 	popd 1> /dev/null
-
-	rm -rf volk/
-	rm -rf gnuradio/
 }
 
 build_libm2k() {
@@ -72,14 +69,12 @@ build_libm2k() {
 		-DENABLE_CSHARP=OFF\
 		-DENABLE_EXAMPLES=ON\
 		-DENABLE_TOOLS=ON\
-		-DINSTALL_UDEV_RULES=ON ../
+		-DINSTALL_UDEV_RULES=OFF ../
 
 	make $JOBS
 	make ${JOBS} install
 
 	popd 1> /dev/null
-
-	rm -rf libm2k/
 }
 
 build_griio() {
@@ -98,8 +93,6 @@ build_griio() {
 	make $JOBS install
 
 	popd 1> /dev/null
-
-	rm -rf gr-iio/
 }
 
 build_grm2k() {
@@ -118,9 +111,26 @@ build_grm2k() {
 	make $JOBS install
 
 	popd 1> /dev/null
-
-	rm -rf gr-m2k/
 }
+
+build_grscopy() {
+	echo "### Building gr-scopy - branch $GRSCOPY_BRANCH"
+
+	[ -d "gr-scopy" ] || {
+		git clone https://github.com/analogdevicesinc/gr-scopy.git -b "${GRSCOPY_BRANCH}" "gr-scopy"
+		mkdir "gr-scopy/build-${ARCH}"
+	}
+
+	pushd "gr-scopy/build-${ARCH}"
+
+	cmake ${CMAKE_OPTS} ../
+
+	make $JOBS
+	make $JOBS install
+
+	popd 1> /dev/null
+}
+
 
 build_libsigrokdecode() {
 	echo "### Building libsigrokdecode - branch $LIBSIGROKDECODE_BRANCH"
@@ -141,40 +151,64 @@ build_libsigrokdecode() {
 
 	popd 1> /dev/null
 	popd 1> /dev/null
-
-	rm -rf libsigrokdecode/
 }
 
-install_scopy() {
-	[ -f "Scopy.flatpak" ] || {
-		wget ${SCOPY}
-		unzip ${SCOPY_ARCHIVE}
-		flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-		flatpak install Scopy.flatpak --assumeyes
-		mkdir -p /usr/local/share/scopy
-		wget https://raw.githubusercontent.com/analogdevicesinc/scopy/86ddd9dce67b2d90e7e52801d6bf730859153c4f/resources/icon_big.svg
-		mv icon_big.svg /usr/local/share/scopy/icon.svg
+build_qwt() {
+	echo "### Building qwt - branch $QWT_BRANCH"
+
+	[ -d "qwt" ] || {
+		git clone https://github.com/osakared/qwt.git -b "${QWT_BRANCH}" "qwt"
 	}
-	echo "
-	[Desktop Entry]
-	Version=1.1	
-	Type=Application
-	Encoding=UTF-8
-	Name=Scopy
-	Comment=ADI
-	Icon=/usr/local/share/scopy/icon.svg
-	Exec=flatpak run org.adi.Scopy
-	Terminal=false
-	Categories=Science" > /usr/share/applications/Scopy.desktop
-	echo "alias scopy='flatpak run org.adi.Scopy'" >> /root/.bashrc
-	echo "alias scopy='flatpak run org.adi.Scopy'" >> /home/analog/.bashrc
+
+	pushd "qwt"
+
+	# Fix prefix
+	sed -i "s+\/usr\/local\/qwt-.*+\/usr\/local+g" qwtconfig.pri
+
+	# Disable components that we won't build
+	sed -i "s/^QWT_CONFIG\\s*+=\\s*QwtMathML$/#/g" qwtconfig.pri
+	sed -i "s/^QWT_CONFIG\\s*+=\\s*QwtDesigner$/#/g" qwtconfig.pri
+	sed -i "s/^QWT_CONFIG\\s*+=\\s*QwtExamples$/#/g" qwtconfig.pri
+
+	qmake qwt.pro
+	make $JOBS
+	make install
+
+	popd 1> /dev/null
 }
 
-install_scopy
+build_qwtpolar() {
+	echo "### Building qwtpolar - branch $QWTPOLAR_BRANCH"
+
+	[ -d "qwtpolar" ] || {
+		mkdir -p "qwtpolar"
+	}
+	pushd "qwtpolar"
+
+	wget https://downloads.sourceforge.net/project/qwtpolar/qwtpolar/1.1.1/qwtpolar-1.1.1.tar.bz2
+	tar -xf qwtpolar-1.1.1.tar.bz2
+
+	pushd qwtpolar-1.1.1
+	curl -o qwtpolar-qwt-6.1-compat.patch https://raw.githubusercontent.com/analogdevicesinc/scopy-flatpak/master/qwtpolar-qwt-6.1-compat.patch
+	patch -p1 < qwtpolar-qwt-6.1-compat.patch
+	sed -i 's/\/usr\/local\/qwtpolar-.*/\/usr\/local/g' qwtpolarconfig.pri
+	sed -i 's/QWT_POLAR_CONFIG     += QwtPolarExamples/ /g' qwtpolarconfig.pri
+	sed -i 's/QWT_POLAR_CONFIG     += QwtPolarDesigner/ /g' qwtpolarconfig.pri
+	qmake qwtpolar.pro
+	make $JOBS
+	make install
+
+	popd 1> /dev/null
+	popd 1> /dev/null
+}
+
 build_gnuradio
 build_libm2k
 build_griio
 build_grm2k
+build_grscopy
 build_libsigrokdecode
+build_qwt
+build_qwtpolar
 
 EOF

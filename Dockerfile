@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ARG BASE_IMAGE=debian:bullseye
 FROM ${BASE_IMAGE}
 

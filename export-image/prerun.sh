@@ -48,36 +48,16 @@ EOF
 	PARTED_OUT=$(parted -sm "${IMG_FILE}" unit b print)
 	BOOT_OFFSET=$(echo "$PARTED_OUT" | grep -e '^1:' | cut -d':' -f 2 | tr -d B)
 	BOOT_LENGTH=$(echo "$PARTED_OUT" | grep -e '^1:' | cut -d':' -f 4 | tr -d B)
-
+	
 	ROOT_OFFSET=$(echo "$PARTED_OUT" | grep -e '^2:' | cut -d':' -f 2 | tr -d B)
 	ROOT_LENGTH=$(echo "$PARTED_OUT" | grep -e '^2:' | cut -d':' -f 4 | tr -d B)
 
-	echo "Mounting BOOT_DEV..."
-	cnt=0
-	until BOOT_DEV=$(losetup --show -f -o "${BOOT_OFFSET}" --sizelimit "${BOOT_LENGTH}" "${IMG_FILE}"); do
-		if [ $cnt -lt 5 ]; then
-			cnt=$((cnt + 1))
-			echo "Error in losetup for BOOT_DEV.  Retrying..."
-			sleep 5
-		else
-			echo "ERROR: losetup for BOOT_DEV failed; exiting"
-			exit 1
-		fi
-	done
+	BOOTLOADER_OFFSET=$(echo "$PARTED_OUT" | grep -e '^3:' | cut -d':' -f 2 | tr -d B)
+	BOOTLOADER_LENGTH=$(echo "$PARTED_OUT" | grep -e '^3:' | cut -d':' -f 4 | tr -d B)
 
-	echo "Mounting ROOT_DEV..."
-	cnt=0
-	until ROOT_DEV=$(losetup --show -f -o "${ROOT_OFFSET}" --sizelimit "${ROOT_LENGTH}" "${IMG_FILE}"); do
-		if [ $cnt -lt 5 ]; then
-			cnt=$((cnt + 1))
-			echo "Error in losetup for ROOT_DEV.  Retrying..."
-			sleep 5
-		else
-			echo "ERROR: losetup for ROOT_DEV failed; exiting"
-			exit 1
-		fi
-	done
-
+	BOOT_DEV=$(losetup --show -f -o "${BOOT_OFFSET}" --sizelimit "${BOOT_LENGTH}" "${IMG_FILE}")
+	ROOT_DEV=$(losetup --show -f -o "${ROOT_OFFSET}" --sizelimit "${ROOT_LENGTH}" "${IMG_FILE}")
+	BOOTLOADER_DEV=$(losetup --show -f -o "${BOOTLOADER_OFFSET}" --sizelimit "${BOOTLOADER_LENGTH}" "${IMG_FILE}")
 	echo "/boot: offset $BOOT_OFFSET, length $BOOT_LENGTH"
 	echo "/:     offset $ROOT_OFFSET, length $ROOT_LENGTH"
 
@@ -93,6 +73,8 @@ EOF
 	mount -v "$ROOT_DEV" "${ROOTFS_DIR}" -t ext4
 	mkdir -p "${ROOTFS_DIR}/boot"
 	mount -v "$BOOT_DEV" "${ROOTFS_DIR}/boot" -t vfat
+
+	dd if="${EXPORT_ROOTFS_DIR}/boot/socfpga_cyclone5_de10_nano_cn0540/preloader_bootloader.img" of=${BOOTLOADER_DEV}
 
 	rsync -aHAXx --exclude /var/cache/apt/archives --exclude /boot "${EXPORT_ROOTFS_DIR}/" "${ROOTFS_DIR}/"
 	rsync -rtx "${EXPORT_ROOTFS_DIR}/boot/" "${ROOTFS_DIR}/boot/"

@@ -23,7 +23,6 @@ if [ "${NO_PRERUN_QCOW2}" = "0" ]; then
 
 	BOOT_PART_START=$((ALIGN))
 	BOOT_PART_SIZE=$(((BOOT_SIZE + ALIGN - 1) / ALIGN * ALIGN))
-	BOOTLOADER_PART_START=$((BOOT_PART_START + BOOT_PART_SIZE))
 	BOOTLOADER_PART_SIZE=$(((1 + ALIGN  - 1) / ALIGN * ALIGN))
 	ROOT_PART_START=$((BOOTLOADER_PART_START + BOOTLOADER_PART_SIZE))
 	ROOT_PART_SIZE=$(((ROOT_SIZE + ROOT_MARGIN + ALIGN  - 1) / ALIGN * ALIGN))
@@ -81,6 +80,19 @@ EOF
 		fi
 	done
 
+	echo "Mounting BOOTLOADER_DEV..."
+	cnt=0
+	until BOOTLOADER_DEV=$(losetup --show -f -o "${BOOTLOADER_OFFSET}" --sizelimit "${BOOTLOADER_LENGTH}" "${IMG_FILE}"); do
+		if [ $cnt -lt 5 ]; then
+			cnt=$((cnt + 1))
+			echo "Error in losetup for BOOTLOADER_DEV.  Retrying..."
+			sleep 5
+		else
+			echo "ERROR: losetup for BOOTLOADER_DEV failed; exiting"
+			exit 1
+		fi
+	done
+
 	echo "/boot: offset $BOOT_OFFSET, length $BOOT_LENGTH"
 	echo "/:     offset $ROOT_OFFSET, length $ROOT_LENGTH"
 
@@ -96,6 +108,7 @@ EOF
 	mount -v "$ROOT_DEV" "${ROOTFS_DIR}" -t ext4
 	mkdir -p "${ROOTFS_DIR}/boot"
 	mount -v "$BOOT_DEV" "${ROOTFS_DIR}/boot" -t vfat
+
 
 	dd if="${EXPORT_ROOTFS_DIR}/boot/socfpga_cyclone5_de10_nano_cn0540/preloader_bootloader.img" of=${BOOTLOADER_DEV}
 

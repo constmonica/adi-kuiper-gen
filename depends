@@ -17,5 +17,5 @@ file
 git
 lsmod:kmod
 bc
-bison
-flex
+qemu-nbd:qemu-utils
+kpartx

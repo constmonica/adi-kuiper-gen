@@ -3,12 +3,10 @@ sonic-pi
 scratch nuscratch scratch3
 smartsim
 
-minecraft-pi python-minecraftpi python-picraft python3-picraft
-python-sense-emu sense-emu-tools python-sense-emu-doc
+python3-sense-emu sense-emu-tools python-sense-emu-doc
 
 claws-mail
 greenfoot-unbundled bluej
 nodered
 
-python-games
 code-the-classics

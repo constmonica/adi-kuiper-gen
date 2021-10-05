@@ -12,3 +12,5 @@ fonts-liberation2
 obconf
 arandr
 libgtk-3-dev
+libcamera-tools
+libcamera-apps

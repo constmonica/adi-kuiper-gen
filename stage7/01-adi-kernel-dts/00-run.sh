@@ -1,41 +1,45 @@
 #!/bin/bash
 set -e
-
-DEFCONFIG_PI0=adi_bcmrpi_defconfig
-DEFCONFIG_PI3=adi_bcm2709_defconfig
-DEFCONFIG_PI4=adi_bcm2711_defconfig
-KERNEL_IMG_PI0=kernel.img
-KERNEL_IMG_PI3=kernel7.img
-KERNEL_IMG_PI4=kernel7l.img
 SCRIPTS_DIR=wiki-scripts
-LINUX_DIR="${1:-linux-adi}"
-BRANCH=rpi-5.4.y
+LINUX="linux-adi"
 
-build_linux() {
+declare -a rpi_configs=("rpi" "2709" "2711")
+declare -a rpi_knames=("" "7" "7l")
 
-	pushd "$WORK_DIR"
+build_rpi_linux() {
 
-	[ -d "$SCRIPTS_DIR" ] || {
-		git clone https://github.com/analogdevicesinc/wiki-scripts.git "$SCRIPTS_DIR"
-	}
-	export DEFCONFIG=$1
-	source $SCRIPTS_DIR/linux/build_rpi_kernel_image.sh $LINUX_DIR "" "arm-linux-gnueabihf-" $BRANCH
+	# this will checkout the branch that has newest commit - should use a parameter/variable to be able to switch between branches
+	git checkout $(git branch -a --sort=-committerdate | grep -E 'rpi\-[0-9]{1,2}\.[0-9]{1,2}\.y$' | head -1 | sed -e 's/^remotes\/origin\///' -e 's/* //')
+
+	unset KCFLAGS ARCH CROSS_COMPILE
+	DEFCONFIG=$1 source $WORK_DIR/$SCRIPTS_DIR/linux/build_rpi_kernel_image.sh . "" ""
 	cp -f zImage $STAGE_WORK_DIR/rootfs/boot/$2
 
-	pushd "$LINUX_DIR"
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE INSTALL_MOD_PATH=$STAGE_WORK_DIR/rootfs modules_install
 	make dtbs
 
-	popd 1> /dev/null
-	popd 1> /dev/null
+	cp -f arch/$ARCH/boot/dts/overlays/*.dtb* $STAGE_WORK_DIR/rootfs/boot/overlays
+	cp -f arch/$ARCH/boot/dts/bcm27*.dtb $STAGE_WORK_DIR/rootfs/boot
+
+}
+pushd "$WORK_DIR"
+
+[ -d "$SCRIPTS_DIR" ] || {
+	git clone https://github.com/analogdevicesinc/wiki-scripts.git "$SCRIPTS_DIR"
+	sed -i "s/make \$DEFCONFIG/make \$DEFCONFIG\necho \"\$(cat \$STAGE_DIR\/01-adi-kernel-dts\/kuiper_defconfig)\" >> \.config\nyes \"\" \| make oldconfig/g" $SCRIPTS_DIR/linux/build_*
 }
 
-build_linux $DEFCONFIG_PI0 $KERNEL_IMG_PI0
-build_linux $DEFCONFIG_PI3 $KERNEL_IMG_PI3
-build_linux $DEFCONFIG_PI4 $KERNEL_IMG_PI4
+[ -d $LINUX ] || {
+	git clone https://github.com/analogdevicesinc/linux $LINUX
+}
+pushd "$LINUX"
 
-cp -f $WORK_DIR/$LINUX_DIR/arch/$ARCH/boot/dts/overlays/*.dtb* $STAGE_WORK_DIR/rootfs/boot/overlays
-cp -f $WORK_DIR/$LINUX_DIR/arch/$ARCH/boot/dts/bcm27*.dtb $STAGE_WORK_DIR/rootfs/boot
+for i in ${!rpi_configs[@]}; do
+	echo "building for adi_bcm${rpi_configs[$i]}_defconfig kernel${rpi_knames[$i]}.img"
+	build_rpi_linux adi_bcm${rpi_configs[$i]}_defconfig kernel${rpi_knames[$i]}.img
+done
 
-echo "Kernel build finished."
+popd 1> /dev/null # push ${LINUX}
+popd 1> /dev/null # push ${WORK_DIR}
 
+echo "RPI Kernel build finished."

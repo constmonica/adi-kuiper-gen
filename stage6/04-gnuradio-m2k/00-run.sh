@@ -1,19 +1,11 @@
 #!/bin/bash -e
 
-LIBIIO_BRANCH=master
-LIBAD9361_BRANCH=master
 LIBM2K_BRANCH=master
 GRIIO_BRANCH=upgrade-3.8
-GNURADIO_FORK=gnuradio
-GNURADIO_BRANCH=maint-3.8
-GRSCOPY_BRANCH=master
 GRM2K_BRANCH=master
-QWT_BRANCH=qwt-6.1-multiaxes
-QWTPOLAR_BRANCH=master
-LIBSIGROK_BRANCH=master
 LIBSIGROKDECODE_BRANCH=master
 
-SCOPY_RELEASE=v1.3.0-rc2
+SCOPY_RELEASE=v1.3.0
 SCOPY_ARCHIVE=scopy-${SCOPY_RELEASE}-Linux-arm.flatpak.zip
 SCOPY=https://github.com/analogdevicesinc/scopy/releases/download/${SCOPY_RELEASE}/${SCOPY_ARCHIVE}
 
@@ -30,30 +22,20 @@ build_gnuradio() {
 
 	pushd volk/build
 	cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 ../
-	make
-	make test
-	make install
-
-	ldconfig
-
-	popd 1> /dev/null
-
-	[ -d "gnuradio" ] || {
-		git clone https://github.com/gnuradio/gnuradio.git
-		mkdir -p gnuradio/build
-	}
-
-	pushd gnuradio/build
-	git checkout maint-3.8
-
-	cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DENABLE_INTERNAL_VOLK=OFF ../ 
 	make ${JOBS}
 	make install
-
-	popd 1> /dev/null
-
+	ldconfig
+	popd 1> /dev/null # volk/build
 	rm -rf volk/
-	rm -rf gnuradio/
+
+	#uncomment next lines is case you need a non-default version (default for bullseye: 3.8.2)
+	apt-get update
+	#add-apt-repository ppa:gnuradio/gnuradio-releases-3.10
+	#apt-get update
+
+	echo "### Installing gnuradio"
+	apt install gnuradio -y
+	ldconfig
 }
 
 build_libm2k() {

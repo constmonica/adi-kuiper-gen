@@ -1,10 +1,7 @@
 libgdk-pixbuf2.0-dev
-libssl-dev
 libgtk2.0-dev
 libxml2
 libxml2-dev
-bison
-flex
 flatpak
 cmake
 git
@@ -87,4 +84,4 @@ libopencv-dev
 vim
 dialog
 ckermit
-fdisk
+software-properties-common

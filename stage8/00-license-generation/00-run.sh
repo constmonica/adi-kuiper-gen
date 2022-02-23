@@ -143,21 +143,23 @@ package_table_items () {
 	echo "<td><a href=\"copyright/${2}/${2}.html\">${2}</a></td>" >> ${FILE}
 	echo "<td><a href=\"copyright/${2}/${2}.html\">${4}</a></td>" >> ${FILE}
 	echo "<td>${3}</td>" >> ${FILE}
-	echo -n "<td><a href=\"${url}\">" >> ${FILE}
-	if $(strstr $5 github) ; then
-		echo -n "Github" >> ${FILE}
-	elif $(strstr $5 sourceforge) ; then
-		echo -n "SourceForge" >> ${FILE}
-	elif $(strstr $5 freedesktop) ; then
-		echo -n "Freedesktop" >> ${FILE}
-	elif $(strstr $5 debian) ; then
-		echo -n "Debian Project" >> ${FILE}
-	elif $(strstr $5 kernel) ; then
-		echo -n "Kernel.org" >> ${FILE}
-	else
-		echo -n "Project" >> ${FILE}
+	if [ ! -z "$url" ]; then
+		echo -n "<td><a href=\"${url}\">" >> ${FILE}
+		if $(strstr $url github) ; then
+			echo -n "Github" >> ${FILE}
+		elif $(strstr $url sourceforge) ; then
+			echo -n "SourceForge" >> ${FILE}
+		elif $(strstr $url freedesktop) ; then
+			echo -n "Freedesktop" >> ${FILE}
+		elif $(strstr $url debian) ; then
+			echo -n "Debian Project" >> ${FILE}
+		elif $(strstr $url kernel) ; then
+			echo -n "Kernel.org" >> ${FILE}
+		else
+			echo -n "Project" >> ${FILE}
+		fi
+		echo "</a></td>" >> ${FILE}
 	fi
-	echo "</a></td>" >> ${FILE}
 	echo "</tr>" >> ${FILE}
 }
 

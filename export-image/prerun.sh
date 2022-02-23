@@ -10,7 +10,7 @@ if [ "${NO_PRERUN_QCOW2}" = "0" ]; then
 	rm -rf "${ROOTFS_DIR}"
 	mkdir -p "${ROOTFS_DIR}"
 
-	BOOT_SIZE="$((1024 * 1024 * 1024))"
+	BOOT_SIZE="$((2048 * 1024 * 1024))"
 	ROOT_SIZE=$(du --apparent-size -s "${EXPORT_ROOTFS_DIR}" --exclude var/cache/apt/archives --exclude boot --block-size=1 | cut -f 1)
 
 	# All partition sizes and starts will be aligned to this size
@@ -35,6 +35,9 @@ if [ "${NO_PRERUN_QCOW2}" = "0" ]; then
 	parted --script "${IMG_FILE}" unit B mkpart primary fat32 "${BOOT_PART_START}" "$((BOOT_PART_START + BOOT_PART_SIZE - 1))"
 	parted --script "${IMG_FILE}" unit B mkpart primary ext4 "${ROOT_PART_START}" "$((ROOT_PART_START + ROOT_PART_SIZE - 1))"
 	parted --script "${IMG_FILE}" unit B mkpart primary ext4 "${BOOTLOADER_PART_START}" "$((BOOTLOADER_PART_START + BOOTLOADER_PART_SIZE - 1))"
+
+	apt-get update
+	apt-get -y install fdisk
 
 	#Change partition 3 type to unknown to be used with Altera/Intel FPGAs
 sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' << EOF | fdisk ${IMG_FILE}
@@ -113,7 +116,7 @@ EOF
 	mount -v "$BOOT_DEV" "${ROOTFS_DIR}/boot" -t vfat
 
 	dd if="${EXPORT_ROOTFS_DIR}/boot/socfpga_cyclone5_de10_nano_cn0540/preloader_bootloader.img" of=${BOOTLOADER_DEV}
-	
-	rsync -aHAXx --exclude /var/cache/apt/archives --exclude /boot "${EXPORT_ROOTFS_DIR}/" "${ROOTFS_DIR}/"
-	rsync -rtx "${EXPORT_ROOTFS_DIR}/boot/" "${ROOTFS_DIR}/boot/"
+
+	rsync -aHAXx --exclude /var/cache/apt/archives --inplace --exclude /boot "${EXPORT_ROOTFS_DIR}/" "${ROOTFS_DIR}/"
+	rsync -rtx --inplace "${EXPORT_ROOTFS_DIR}/boot/" "${ROOTFS_DIR}/boot/"
 fi

@@ -7,7 +7,7 @@ on_chroot << EOF
 
 pushd linux_image_ADI-scripts
 chmod +x adi_update_tools.sh
-./adi_update_tools.sh 2019_R2
+./adi_update_tools.sh dev
 
 popd
 

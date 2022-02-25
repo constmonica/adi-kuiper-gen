@@ -115,7 +115,8 @@ EOF
 	mkdir -p "${ROOTFS_DIR}/boot"
 	mount -v "$BOOT_DEV" "${ROOTFS_DIR}/boot" -t vfat
 
-	dd if="${EXPORT_ROOTFS_DIR}/boot/socfpga_cyclone5_de10_nano_cn0540/preloader_bootloader.img" of=${BOOTLOADER_DEV}
+
+	dd if="${EXPORT_ROOTFS_DIR}/boot/socfpga_cyclone5_de10_nano_cn0540/u-boot-with-spl.sfp" of=${BOOTLOADER_DEV}
 
 	rsync -aHAXx --exclude /var/cache/apt/archives --inplace --exclude /boot "${EXPORT_ROOTFS_DIR}/" "${ROOTFS_DIR}/"
 	rsync -rtx --inplace "${EXPORT_ROOTFS_DIR}/boot/" "${ROOTFS_DIR}/boot/"

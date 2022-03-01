@@ -153,10 +153,10 @@ install_scopy() {
 }
 
 install_scopy
-build_gnuradio
-build_libm2k
+#build_gnuradio
+#build_libm2k
 #build_griio
-build_grm2k
-build_libsigrokdecode
+#build_grm2k
+#build_libsigrokdecode
 
 EOF

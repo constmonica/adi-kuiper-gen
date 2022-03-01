@@ -1,11 +1,11 @@
 #!/bin/bash -e
 
-LIBM2K_BRANCH=master
-GRIIO_BRANCH=upgrade-3.8
-GRM2K_BRANCH=master
-LIBSIGROKDECODE_BRANCH=master
+LIBM2K_BRANCH="v0.6.0"
+GRIIO_BRANCH="upgrade-3.8"
+GRM2K_BRANCH="3.10"
+LIBSIGROKDECODE_BRANCH="master"
 
-SCOPY_RELEASE=v1.3.0
+SCOPY_RELEASE="v1.3.0"
 SCOPY_ARCHIVE=scopy-${SCOPY_RELEASE}-Linux-arm.flatpak.zip
 SCOPY=https://github.com/analogdevicesinc/scopy/releases/download/${SCOPY_RELEASE}/${SCOPY_ARCHIVE}
 
@@ -29,11 +29,11 @@ build_gnuradio() {
 	rm -rf volk/
 
 	#uncomment next lines is case you need a non-default version (default for bullseye: 3.8.2)
-	apt-get update
-	#add-apt-repository ppa:gnuradio/gnuradio-releases-3.10
 	#apt-get update
+	add-apt-repository ppa:gnuradio/gnuradio-releases-3.10
+	apt-get update
 
-	echo "### Installing gnuradio"
+	echo "### Installing gnuradio 3.10"
 	apt install gnuradio -y
 	ldconfig
 }
@@ -155,7 +155,7 @@ install_scopy() {
 install_scopy
 build_gnuradio
 build_libm2k
-build_griio
+#build_griio
 build_grm2k
 build_libsigrokdecode
 

@@ -22,3 +22,4 @@ flex
 qemu-nbd:qemu-utils
 kpartx
 gpg
+pigz

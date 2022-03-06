@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
-LIBM2K_BRANCH=master
-GRIIO_BRANCH=upgrade-3.8
-GRM2K_BRANCH=master
+LIBM2K_BRANCH="v0.6.0"
+GRIIO_BRANCH="upgrade-3.8"
+GRM2K_BRANCH="3.10"
 LIBSIGROKDECODE_BRANCH=master
 
 SCOPY_RELEASE=v1.3.0
@@ -29,12 +29,25 @@ build_gnuradio() {
 	rm -rf volk/
 
 	#uncomment next lines is case you need a non-default version (default for bullseye: 3.8.2)
-	apt-get update
+	#apt-get update
 	#add-apt-repository ppa:gnuradio/gnuradio-releases-3.10
 	#apt-get update
 
-	echo "### Installing gnuradio"
-	apt install gnuradio -y
+	echo "### Building gnuradio 3.10"
+	#apt install gnuradio -y
+
+	[ -d "gnuradio" ] || {
+		git clone https://github.com/gnuradio/gnuradio.git
+		mkdir -p gnuradio/build
+	}
+	pushd gnuradio/build
+	git checkout maint-3.10
+	cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 ../
+	make ${JOBS}
+	make install
+	popd 1> /dev/null
+	rm -rf gnuradio/
+
 	ldconfig
 }
 
@@ -155,7 +168,7 @@ install_scopy() {
 install_scopy
 build_gnuradio
 build_libm2k
-build_griio
+#build_griio
 build_grm2k
 build_libsigrokdecode
 

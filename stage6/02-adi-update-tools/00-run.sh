@@ -16,9 +16,8 @@ on_chroot << EOF
    }
 
    pushd linux_image_ADI-scripts
-   git checkout main
    chmod +x adi_update_tools.sh
-   ./adi_update_tools.sh dev
+   ./adi_update_tools.sh next_stable
    popd
 
 EOF

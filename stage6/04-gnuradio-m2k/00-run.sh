@@ -3,7 +3,7 @@
 LIBM2K_BRANCH="v0.8.0"
 GRIIO_BRANCH="upgrade-3.8"
 GRM2K_BRANCH="maint-3.8"
-LIBSIGROKDECODE_BRANCH=master
+LIBSIGROKDECODE_BRANCH="master"
 
 SCOPY_RELEASE="v1.4.1" # latest Scopy release, from 03 August 2022
 SCOPY_ARCHIVE=Scopy-${SCOPY_RELEASE}-Linux-arm.zip

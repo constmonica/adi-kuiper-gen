@@ -1,11 +1,11 @@
 #!/bin/bash -e
 
-LIBM2K_BRANCH=master
-GRIIO_BRANCH="upgrade-3.8"
-GRM2K_BRANCH="maint-3.8"
-LIBSIGROKDECODE_BRANCH=master
+LIBM2K_BRANCH="next_stable"
+GRIIO_BRANCH="next_stable"
+GRM2K_BRANCH="maint-3.8" # let this to maint-3.8 since GNU Radio installed in Kuiper is 3.8.2
+LIBSIGROKDECODE_BRANCH="master"
 
-SCOPY_RELEASE="v1.4.0"
+SCOPY_RELEASE="v1.4.1" # latest scopy release from 03 August 2022
 SCOPY_ARCHIVE=Scopy-${SCOPY_RELEASE}-Linux-arm.zip
 SCOPY=https://github.com/analogdevicesinc/scopy/releases/download/${SCOPY_RELEASE}/${SCOPY_ARCHIVE}
 

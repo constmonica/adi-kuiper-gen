@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
 LIBM2K_BRANCH="next_stable"
-GRIIO_BRANCH="next_stable"
-GRM2K_BRANCH="maint-3.8" # let this to maint-3.8 since GNU Radio installed in Kuiper is 3.8.2
+GRIIO_BRANCH="upgrade-3.8" # let this to 'upgrade-3.8' since GNU Radio is 3.8.2
+GRM2K_BRANCH="maint-3.8" # let this to 'maint-3.8' since GNU Radio installed in Kuiper is 3.8.2
 LIBSIGROKDECODE_BRANCH="master"
 
 SCOPY_RELEASE="v1.4.1" # latest scopy release from 03 August 2022

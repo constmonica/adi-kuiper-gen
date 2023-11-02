@@ -14,7 +14,7 @@ on_chroot << EOF
 
 pushd linux_image_ADI-scripts
 chmod +x adi_update_tools.sh
-./adi_update_tools.sh next_stable
+./adi_update_tools.sh 2022_R2
 
 popd
 

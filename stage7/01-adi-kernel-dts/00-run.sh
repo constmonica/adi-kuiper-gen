@@ -1,21 +1,23 @@
 #!/bin/bash
 set -e
+echo "stage7/01 ... skip RPI boot files, add just demo files "
 
-rm -rf ${STAGE_WORK_DIR}/rootfs/boot/kernel*.img ${STAGE_WORK_DIR}/rootfs/boot/bcm*.dtb ${STAGE_WORK_DIR}/rootfs/boot/overlays/*.dtbo
+rm -rf ${STAGE_WORK_DIR}/rootfs/boot/*
 rm -rf ${STAGE_WORK_DIR}/rootfs/lib/modules/*
 
-if [[ ! -z ${RPI_BOOT} ]]; then
-	wget -r -q --show-progress -nH --cut-dirs=5 -np -R "index.html*" "-l inf" "${RPI_BOOT}" -P "${STAGE_WORK_DIR}/rootfs/boot"
-	tar -xvf "${STAGE_WORK_DIR}/rootfs/boot/rpi_modules.tar.gz" -C "${STAGE_WORK_DIR}/rootfs/lib/modules" --no-same-owner
-	rm -rf "${STAGE_WORK_DIR}/rootfs/boot/rpi_modules.tar.gz"
-else
-	rm -f rpi_latest_boot.tar.gz
-	wget https://swdownloads.analog.com/cse/linux_rpi/${RPI_BOOT_FILES_BRANCH}/rpi_latest_boot.tar.gz
-	tar -xvf rpi_latest_boot.tar.gz -C ${STAGE_WORK_DIR}/rootfs/boot --no-same-owner
-	rm -f rpi_latest_boot.tar.gz
+mkdir -p ${STAGE_WORK_DIR}/rootfs/boot/workshop_file
 
-	rm -f rpi_modules.tar.gz
-	wget https://swdownloads.analog.com/cse/linux_rpi/${RPI_BOOT_FILES_BRANCH}/rpi_modules.tar.gz
-	tar -xvf rpi_modules.tar.gz -C ${STAGE_WORK_DIR}/rootfs/lib/modules --no-same-owner
-	rm -f rpi_modules.tar.gz
-fi
+wget -q --show-progress "http://10.48.65.63/share/stefan/fae_files/BOOT.BIN" -P "${STAGE_WORK_DIR}/rootfs/boot"
+wget -q --show-progress "http://10.48.65.63/share/stefan/fae_files/devicetree.dtb" -P "${STAGE_WORK_DIR}/rootfs/boot"
+wget -q --show-progress "http://10.48.65.63/share/stefan/fae_files/uImage" -P "${STAGE_WORK_DIR}/rootfs/boot/"
+wget -q --show-progress "http://10.48.65.63/share/stefan/fae_files/uEnv.txt" -P "${STAGE_WORK_DIR}/rootfs/boot/"
+
+wget -q --show-progress "http://10.48.65.63/share/stefan/fae_files/fae_workshop_visual.vac" -P "${STAGE_WORK_DIR}/rootfs/boot/workshop_file"
+wget -q --show-progress "http://10.48.65.63/share/stefan/fae_files/uEnv.txt" -P "${STAGE_WORK_DIR}/rootfs/boot/workshop_file"
+
+cd ${STAGE_WORK_DIR}/rootfs/boot/workshop_file
+
+mkdir -p ${STAGE_WORK_DIR}/rootfs/boot/workshop_file/fae_workshop_pyadi_iio
+cd ${STAGE_WORK_DIR}/rootfs/boot/workshop_file/fae_workshop_pyadi_iio
+git clone https://github.com/analogdevicesinc/pyadi-iio.git -b "ad7984_demo" "pyadi-iio"
+cd ../..
